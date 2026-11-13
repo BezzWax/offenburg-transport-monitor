@@ -1,3 +1,4 @@
+
 name: Daily Offenburg Transport Check
 
 on:
@@ -31,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-            - name: Verify Telegram secrets
+      - name: Verify Telegram secrets
         shell: bash
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
