@@ -31,6 +31,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+            - name: Verify Telegram secrets
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+        run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "::error::TELEGRAM_BOT_TOKEN is missing"
+            exit 1
+          fi
+
+          if [ -z "$TELEGRAM_CHAT_IDS" ]; then
+            echo "::error::TELEGRAM_CHAT_IDS is missing"
+            exit 1
+          fi
+
+          echo "TELEGRAM_BOT_TOKEN is available"
+          echo "TELEGRAM_CHAT_IDS is available"
+
       - name: Typecheck
         run: npm run typecheck
 
