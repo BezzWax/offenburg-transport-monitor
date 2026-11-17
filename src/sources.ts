@@ -14,3 +14,9 @@ export const SOURCES: TransportSource[] = [
     kind: "regional-transport",
   },
 ];
+
+export const MAX_ATTEMPTS = 3;
+export const REQUEST_TIMEOUT_MS = 15_000;
+export const RETRY_DELAYS_MS = [2_000, 5_000];
+
+export class TelegramPermanentError extends Error {}

@@ -28,3 +28,11 @@ export interface SourceResult {
   notices: TransportNotice[];
   error?: string;
 }
+
+export interface TelegramResponse {
+  ok: boolean;
+  description?: string;
+  parameters?: {
+    retry_after?: number;
+  };
+}
