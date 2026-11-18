@@ -1,8 +1,55 @@
+
 import "dotenv/config";
 import { collectSource } from "./collector.js";
 import { buildReport } from "./report.js";
-import { SOURCES } from "./sources.js";
+import { SOURCES, SUBSCRIBERS_API_URL } from "./sources.js";
 import { sendTelegramMessage } from "./telegram.js";
+
+
+async function getSubscribers(): Promise<string[]> {
+  const secret = process.env.SUBSCRIBERS_API_SECRET;
+
+  if (!secret) {
+    throw new Error("SUBSCRIBERS_API_SECRET is not configured.");
+  }
+
+  const response = await fetch(SUBSCRIBERS_API_URL, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+
+    throw new Error(
+      `Subscribers API error ${response.status}: ${error}`,
+    );
+  }
+
+  const data: unknown = await response.json();
+
+  if (
+    typeof data !== "object" ||
+    data === null ||
+    !("success" in data) ||
+    data.success !== true ||
+    !("chatIds" in data) ||
+    !Array.isArray(data.chatIds)
+  ) {
+    throw new Error("Invalid response from subscribers API.");
+  }
+
+  const chatIds = data.chatIds;
+
+  if (!chatIds.every((id): id is string => typeof id === "string")) {
+    throw new Error("Subscribers API returned invalid chat IDs.");
+  }
+
+  return [...new Set(chatIds)];
+}
 
 async function main(): Promise<void> {
   console.log("Starting Offenburg transport check...");
@@ -20,28 +67,36 @@ async function main(): Promise<void> {
   }
 
   const report = buildReport(results);
+
   console.log("\n--- REPORT ---\n");
   console.log(report);
 
   const dryRun = process.env.DRY_RUN !== "false";
+
   if (dryRun) {
     console.log("\nDRY_RUN enabled: Telegram message was not sent.");
     return;
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatIds = (process.env.TELEGRAM_CHAT_IDS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
 
-  if (!token || chatIds.length === 0) {
-    throw new Error(
-      "Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_IDS, or use DRY_RUN=true.",
-    );
+  if (!token) {
+    throw new Error("TELEGRAM_BOT_TOKEN is not configured.");
+  }
+
+  console.log("\nFetching active Telegram subscribers...");
+
+  const chatIds = await getSubscribers();
+
+  console.log(`Found ${chatIds.length} active subscriber(s).`);
+
+  if (chatIds.length === 0) {
+    console.log("No active subscribers. Telegram message was not sent.");
+    return;
   }
 
   await sendTelegramMessage(report, token, chatIds);
+
   console.log(`Report sent to ${chatIds.length} Telegram chat(s).`);
 }
 
