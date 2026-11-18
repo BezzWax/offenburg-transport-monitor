@@ -20,3 +20,6 @@ export const REQUEST_TIMEOUT_MS = 15_000;
 export const RETRY_DELAYS_MS = [2_000, 5_000];
 
 export class TelegramPermanentError extends Error {}
+
+export const SUBSCRIBERS_API_URL =
+  "https://offenburg-transport-trigger.kolomiec-evgeniy03.workers.dev/api/subscribers";

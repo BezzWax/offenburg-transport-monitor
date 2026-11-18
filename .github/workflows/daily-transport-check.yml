@@ -39,5 +39,5 @@ jobs:
         run: npm run check
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+          SUBSCRIBERS_API_SECRET: ${{ secrets.SUBSCRIBERS_API_SECRET }}
           DRY_RUN: "false"
